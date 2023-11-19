@@ -1,0 +1,36 @@
+version: '3'
+
+services:
+  mongodb:
+    image: mongo
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - network
+
+  go-app:
+    build:
+      context: .
+    ports:
+      - "8080:8080"
+    networks:
+      - network
+    depends_on:
+      - mongodb
+
+  linux-client:
+    image: ubuntu
+    command: tail -f /dev/null
+    networks:
+      - network
+    volumes:
+      - volume:/app
+    depends_on:
+      - mongodb
+
+networks:
+  network:
+
+volumes:
+  mongodb_data:
+  volume:
