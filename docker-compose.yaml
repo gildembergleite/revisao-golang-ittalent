@@ -1,40 +1,38 @@
-version: '3'
-
 services:
-  mongodb:
+  db:
+    container_name: db
     image: mongo
+    restart: always
+    networks:
+      - api-net
     volumes:
-      - mongodb_data:/data/db
-    networks:
-      - go-app-network
-
-  go-app:
+      - db:/data/db
+      
+  api:
+    container_name: api
     image: gildembergleite/revisao-golang-ittalent
-    ports:
-      - "8080:8080"
+    restart: always
     networks:
-      - go-app-network
+      - api-net
     depends_on:
-      - mongodb
+      - db
+    environment:
+      MONGO_DB_HOST: db
 
-  linux-client:
+  
+  client:
+    container_name: client
     image: ubuntu
     networks:
-      - go-app-network
-    volumes:
-      - go-app-volume:/app
-    depends_on:
-      - mongodb
-    command: >
-      bash -c "
-        tail -f /dev/null && 
-        apt-get update && 
-        apt-get install -y curl vim-tiny htop
-      "
+      - api-net
+    tty: true
+    command: bash -c "apt-get update && apt-get install -y curl vim-tiny htop && tail -f /dev/null"
 
 networks:
-  go-app-network:
+  api-net:
+    name: api-net
+    driver: bridge
 
 volumes:
-  mongodb_data:
-  go-app-volume:
+  db:
+    name: db
