@@ -6,31 +6,35 @@ services:
     volumes:
       - mongodb_data:/data/db
     networks:
-      - network
+      - go-app-network
 
   go-app:
-    build:
-      context: .
+    image: gildembergleite/revisao-golang-ittalent
     ports:
       - "8080:8080"
     networks:
-      - network
+      - go-app-network
     depends_on:
       - mongodb
 
   linux-client:
     image: ubuntu
-    command: tail -f /dev/null
     networks:
-      - network
+      - go-app-network
     volumes:
-      - volume:/app
+      - go-app-volume:/app
     depends_on:
       - mongodb
+    command: >
+      bash -c "
+        tail -f /dev/null && 
+        apt-get update && 
+        apt-get install -y curl vim-tiny htop
+      "
 
 networks:
-  network:
+  go-app-network:
 
 volumes:
   mongodb_data:
-  volume:
+  go-app-volume:
